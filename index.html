@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vega Courier — Track Your Shipment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #0e0e0e; color: #f0ede6; min-height: 100vh; }
+
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2.5rem; border-bottom: 0.5px solid #2a2a2a; }
+  .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px; color: #f0ede6; }
+  .nav-logo span { color: #c9a84c; }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { font-size: 13px; color: #666; text-decoration: none; cursor: pointer; }
+  .nav-links a:hover { color: #f0ede6; }
+
+  .hero { padding: 4rem 2rem 2.5rem; max-width: 860px; margin: 0 auto; text-align: center; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; color: #c9a84c; text-transform: uppercase; margin-bottom: 1rem; }
+  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 9vw, 90px); letter-spacing: 3px; line-height: 0.95; color: #f0ede6; margin-bottom: 1rem; }
+  .hero-title span { color: #c9a84c; }
+  .hero-sub { font-size: 14px; color: #777; max-width: 420px; margin: 0 auto 2.5rem; line-height: 1.7; font-weight: 300; }
+
+  .track-card { background: #161616; border: 0.5px solid #2a2a2a; border-radius: 12px; padding: 1.75rem; max-width: 560px; margin: 0 auto; }
+  .track-label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #555; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .track-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+  .track-input { flex: 1; height: 50px; background: #0e0e0e; border: 1px solid #333; border-radius: 8px; color: #f0ede6; font-family: 'Space Mono', monospace; font-size: 14px; padding: 0 1rem; letter-spacing: 2px; }
+  .track-input::placeholder { color: #3a3a3a; }
+  .track-input:focus { outline: none; border-color: #c9a84c; }
+  .track-btn { height: 50px; padding: 0 1.5rem; background: #c9a84c; color: #0e0e0e; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; cursor: pointer; }
+  .track-btn:hover { background: #d4b055; }
+  .track-btn:active { transform: scale(0.98); }
+
+  .demo-section { border-top: 0.5px solid #222; padding-top: 1rem; }
+  .demo-lbl { font-size: 11px; color: #444; margin-bottom: 0.6rem; font-family: 'Space Mono', monospace; }
+  .demo-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .demo-btn { background: #1a1a1a; border: 0.5px solid #333; border-radius: 6px; color: #c9a84c; font-family: 'Space Mono', monospace; font-size: 12px; padding: 8px 14px; cursor: pointer; letter-spacing: 1px; }
+  .demo-btn:hover { background: #222; border-color: #c9a84c; }
+
+  .result-wrap { margin-top: 1.25rem; display: none; border-top: 0.5px solid #2a2a2a; padding-top: 1.25rem; }
+  .result-wrap.show { display: block; }
+
+  .r-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+  .r-code { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px; color: #f0ede6; }
+  .r-badge { font-family: 'Space Mono', monospace; font-size: 10px; padding: 5px 10px; border-radius: 20px; letter-spacing: 1px; }
+  .badge-transit { background: #1a2e1a; color: #5dca84; }
+  .badge-delivered { background: #1a2e1a; color: #5dca84; }
+  .badge-pending { background: #2e2a1a; color: #c9a84c; }
+
+  .route-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; }
+  .r-city { font-weight: 500; color: #f0ede6; font-size: 13px; }
+  .r-line { flex: 1; height: 1px; background: #2a2a2a; position: relative; }
+  .r-dot { width: 8px; height: 8px; border-radius: 50%; background: #c9a84c; position: absolute; top: -3.5px; }
+
+  .timeline { border-left: 1px solid #2a2a2a; padding-left: 1.25rem; margin-left: 4px; }
+  .t-item { position: relative; padding-bottom: 1rem; }
+  .t-item:last-child { padding-bottom: 0; }
+  .t-dot { width: 9px; height: 9px; border-radius: 50%; position: absolute; left: -1.7rem; top: 4px; }
+  .t-dot.done { background: #c9a84c; }
+  .t-dot.active { background: #5dca84; }
+  .t-dot.pending { background: #2a2a2a; border: 1px solid #444; }
+  .t-status { font-size: 13px; font-weight: 500; color: #f0ede6; margin-bottom: 2px; }
+  .t-status.muted { color: #555; font-weight: 400; }
+  .t-loc { font-size: 12px; color: #666; }
+  .t-date { font-size: 11px; font-family: 'Space Mono', monospace; color: #555; margin-top: 2px; }
+
+  .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 0.5px solid #2a2a2a; }
+  .lbl { font-size: 10px; font-family: 'Space Mono', monospace; letter-spacing: 1px; color: #555; text-transform: uppercase; margin-bottom: 3px; }
+  .val { font-size: 13px; color: #f0ede6; }
+  .not-found { text-align: center; padding: 1.5rem 0; color: #555; font-size: 13px; }
+  .not-found strong { display: block; color: #888; margin-bottom: 4px; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #1a1a1a; border: 0.5px solid #2a2a2a; border-radius: 12px; overflow: hidden; max-width: 560px; margin: 2rem auto 0; }
+  .stat { background: #0e0e0e; padding: 1.25rem; text-align: center; }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 2px; color: #c9a84c; }
+  .stat-lbl { font-size: 11px; color: #555; margin-top: 2px; }
+
+  footer { text-align: center; padding: 2rem; border-top: 0.5px solid #1a1a1a; margin-top: 3rem; font-size: 11px; color: #333; font-family: 'Space Mono', monospace; }
+
+  @media (max-width: 480px) {
+    nav { padding: 1rem 1.25rem; }
+    .hero { padding: 2.5rem 1.25rem 2rem; }
+    .track-card { padding: 1.25rem; }
+    .info-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">VEGA<span>.</span></div>
+  <div class="nav-links">
+    <a>Services</a>
+    <a>About</a>
+    <a>Contact</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Global sea freight network</div>
+  <div class="hero-title">YOUR CARGO.<br><span>DELIVERED.</span></div>
+  <div class="hero-sub">Premium sea freight from Dubai to Europe — tracked at every port of call.</div>
+
+  <div class="track-card">
+    <div class="track-label">Enter your tracking number</div>
+    <div class="track-row">
+      <input class="track-input" id="ti" placeholder="e.g. TRK-2847" onkeydown="if(event.key==='Enter')doTrack()" />
+      <button class="track-btn" onclick="doTrack()">TRACK</button>
+    </div>
+
+    <div class="demo-section">
+      <div class="demo-lbl">— try a demo shipment —</div>
+      <div class="demo-btns">
+        <button class="demo-btn" onclick="fill('TRK-2847')">TRK-2847 ▶</button>
+        <button class="demo-btn" onclick="fill('TRK-1193')">TRK-1193 ▶</button>
+        <button class="demo-btn" onclick="fill('TRK-5501')">TRK-5501 ▶</button>
+      </div>
+    </div>
+
+    <div class="result-wrap" id="rw"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">25+</div><div class="stat-lbl">Days Dubai–Vienna</div></div>
+    <div class="stat"><div class="stat-num">5</div><div class="stat-lbl">Port checkpoints</div></div>
+    <div class="stat"><div class="stat-num">99%</div><div class="stat-lbl">On-time rate</div></div>
+  </div>
+</div>
+
+<footer>© 2026 VEGA COURIER &nbsp;·&nbsp; Dubai to Europe, by sea.</footer>
+
+<script>
+const shipments = {
+  'TRK-2847': {
+    status: 'In transit', badge: 'badge-transit',
+    from: 'Dubai', to: 'Vienna', progress: 55,
+    desc: 'Industrial equipment', weight: '340 kg', service: 'Sea Freight — FCL',
+    timeline: [
+      { label: 'Cargo received at port', loc: 'Jebel Ali Port, Dubai, UAE', date: 'Mar 10, 2026 — 08:00', state: 'done' },
+      { label: 'Vessel departed', loc: 'Jebel Ali Port, Dubai — MV Vega Star', date: 'Mar 12, 2026 — 14:00', state: 'done' },
+      { label: 'Transited Suez Canal', loc: 'Suez Canal, Egypt', date: 'Mar 19, 2026 — 06:30', state: 'done' },
+      { label: 'Port call — customs check', loc: 'Port Said, Egypt', date: 'Mar 20, 2026 — 11:00', state: 'done' },
+      { label: 'Transiting Mediterranean Sea', loc: 'En route to Malta', date: 'Mar 22, 2026 — 09:00', state: 'active' },
+      { label: 'Port call — transshipment', loc: 'Marsaxlokk Port, Malta', date: 'Pending', state: 'pending' },
+      { label: 'Arrived at discharge port', loc: 'Port of Trieste, Italy', date: 'Pending', state: 'pending' },
+      { label: 'Delivered to destination', loc: 'Vienna, Austria', date: 'Pending', state: 'pending' },
+    ]
+  },
+  'TRK-1193': {
+    status: 'Delivered', badge: 'badge-delivered',
+    from: 'Dubai', to: 'Vienna', progress: 100,
+    desc: 'Textile goods', weight: '180 kg', service: 'Sea Freight — LCL',
+    timeline: [
+      { label: 'Cargo received at port', loc: 'Jebel Ali Port, Dubai, UAE', date: 'Feb 10, 2026 — 09:00', state: 'done' },
+      { label: 'Vessel departed', loc: 'Jebel Ali Port, Dubai — MV Adriatic Wind', date: 'Feb 12, 2026 — 18:00', state: 'done' },
+      { label: 'Transited Suez Canal', loc: 'Suez Canal, Egypt', date: 'Feb 19, 2026 — 04:00', state: 'done' },
+      { label: 'Port call — customs check', loc: 'Port Said, Egypt', date: 'Feb 19, 2026 — 20:00', state: 'done' },
+      { label: 'Port call — transshipment', loc: 'Marsaxlokk Port, Malta', date: 'Feb 23, 2026 — 10:00', state: 'done' },
+      { label: 'Arrived at discharge port', loc: 'Port of Trieste, Italy', date: 'Feb 27, 2026 — 07:30', state: 'done' },
+      { label: 'Delivered to destination', loc: 'Vienna, Austria', date: 'Mar 1, 2026 — 14:00', state: 'done' },
+    ]
+  },
+  'TRK-5501': {
+    status: 'Pending departure', badge: 'badge-pending',
+    from: 'Dubai', to: 'Vienna', progress: 5,
+    desc: 'Furniture & home goods', weight: '520 kg', service: 'Sea Freight — FCL',
+    timeline: [
+      { label: 'Cargo received at port', loc: 'Jebel Ali Port, Dubai, UAE', date: 'Mar 29, 2026 — 08:00', state: 'active' },
+      { label: 'Awaiting vessel departure', loc: 'Jebel Ali Port, Dubai', date: 'Pending', state: 'pending' },
+      { label: 'Suez Canal transit', loc: 'Suez Canal, Egypt', date: 'Pending', state: 'pending' },
+      { label: 'Mediterranean crossing', loc: 'En route', date: 'Pending', state: 'pending' },
+      { label: 'Arrived at discharge port', loc: 'Port of Trieste, Italy', date: 'Pending', state: 'pending' },
+      { label: 'Delivered to destination', loc: 'Vienna, Austria', date: 'Pending', state: 'pending' },
+    ]
+  }
+};
+
+function fill(c) {
+  document.getElementById('ti').value = c;
+  doTrack();
+}
+
+function doTrack() {
+  const code = document.getElementById('ti').value.trim().toUpperCase();
+  const rw = document.getElementById('rw');
+  rw.className = 'result-wrap show';
+  const s = shipments[code];
+  if (!s) {
+    rw.innerHTML = '<div class="not-found"><strong>Tracking code not found</strong>Check your number and try again, or contact support.</div>';
+    return;
+  }
+  const tl = s.timeline.map(t => `
+    <div class="t-item">
+      <div class="t-dot ${t.state}"></div>
+      <div class="t-status ${t.state === 'pending' ? 'muted' : ''}">${t.label}</div>
+      ${t.loc ? `<div class="t-loc">${t.loc}</div>` : ''}
+      <div class="t-date">${t.date}</div>
+    </div>`).join('');
+  rw.innerHTML = `
+    <div class="r-head">
+      <div class="r-code">${code}</div>
+      <div class="r-badge ${s.badge}">${s.status}</div>
+    </div>
+    <div class="route-bar">
+      <div class="r-city">${s.from}</div>
+      <div class="r-line"><div class="r-dot" style="left:${s.progress}%"></div></div>
+      <div class="r-city">${s.to}</div>
+    </div>
+    <div class="timeline">${tl}</div>
+    <div class="info-row">
+      <div><div class="lbl">Contents</div><div class="val">${s.desc}</div></div>
+      <div><div class="lbl">Weight</div><div class="val">${s.weight}</div></div>
+      <div><div class="lbl">Service</div><div class="val">${s.service}</div></div>
+      <div><div class="lbl">Route</div><div class="val">${s.from} → ${s.to}</div></div>
+    </div>`;
+}
+</script>
+</body>
+</html>
